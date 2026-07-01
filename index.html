@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+            display: none;
+        }
+        #result.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h2>发送 POST 请求</h2>
+    <form id="postForm">
+        <input type="text" id="title" name="title" placeholder="标题"><br>
+        <textarea id="content" name="content" placeholder="内容" rows="5"></textarea><br>
+        <button type="submit">提交</button>
+    </form>
+
+    <div id="result">
+        <h3>服务器返回的数据：</h3>
+        <p><strong>状态：</strong><span id="status"></span></p>
+        <p><strong>消息：</strong><span id="message"></span></p>
+        <p><strong>标题：</strong><span id="resTitle"></span></p>
+        <p><strong>内容：</strong><span id="resContent"></span></p>
+    </div>
+
+    <script>
+        document.getElementById('postForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // 阻止表单默认提交（页面刷新）
+
+            // 获取表单数据
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+
+            // 构造表单格式的数据
+            const formData = 'title=' + encodeURIComponent(title) +
+                             '&content=' + encodeURIComponent(content);
+
+            // 使用 XMLHttpRequest 发送 POST 请求
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:8080', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) { // 请求完成
+                    if (xhr.status === 200) { // 成功
+                        // 解析后端返回的 JSON
+                        const response = JSON.parse(xhr.responseText);
+                        console.log('服务器返回:', response);
+
+                        // 将返回的数据显示在页面上
+                        document.getElementById('status').textContent = response.status;
+                        document.getElementById('message').textContent = response.message;
+                        document.getElementById('resTitle').textContent = response.data.title;
+                        document.getElementById('resContent').textContent = response.data.content;
+                        document.getElementById('result').classList.add('show');
+                    } else {
+                        alert('请求失败，状态码: ' + xhr.status);
+                    }
+                }
+            };
+
+            xhr.send(formData);
+        });
+    </script>
+</body>
+</html>
